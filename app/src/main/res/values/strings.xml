@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Istream</string>
+    <string name="hello_world">Hello World!</string>
+    <string name="istream_logo">iStream</string>
+    <string name="tagline">Watch. Save. Stream.</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">LOGIN</string>
+    <string name="signup_button">SIGN UP</string>
+    <string name="create_account_title">Create Account</string>
+    <string name="signup_subtitle">Join iStream today</string>
+    <string name="full_name_hint">Full Name</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="create_account_button">CREATE ACCOUNT</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.example.istream;
+package com.example.istream.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -44,12 +44,16 @@ public class LoginActivity extends AppCompatActivity {
                 SharedPreferences prefs = getSharedPreferences("istream_prefs", MODE_PRIVATE);
                 prefs.edit().putInt("userId", user.id).putString("username", user.username).apply();
 
-
+                Intent intent = new Intent(this, HomeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
             } else {
                 Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show();
             }
         });
 
-
+        btnSignUp.setOnClickListener(v -> {
+            startActivity(new Intent(this, SignUpActivity.class));
+        });
     }
 }

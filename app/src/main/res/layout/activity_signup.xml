@@ -16,19 +16,31 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/istream_logo"
-            android:textSize="42sp"
+            android:text="@string/create_account_title"
+            android:textSize="30sp"
             android:textStyle="bold"
-            android:textColor="#E94560"
-            android:layout_marginBottom="4dp" />
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="6dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/tagline"
+            android:text="@string/signup_subtitle"
             android:textSize="14sp"
             android:textColor="#B0B0C0"
-            android:layout_marginBottom="48dp" />
+            android:layout_marginBottom="36dp" />
+
+        <EditText
+            android:id="@+id/etFullName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/full_name_hint"
+            android:inputType="textPersonName"
+            android:singleLine="true"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#808099"
+            android:textSize="15sp"
+            android:layout_marginBottom="16dp" />
 
         <EditText
             android:id="@+id/etUsername"
@@ -52,28 +64,29 @@
             android:textColor="#FFFFFF"
             android:textColorHint="#808099"
             android:textSize="15sp"
+            android:layout_marginBottom="16dp" />
+
+        <EditText
+            android:id="@+id/etConfirmPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/confirm_password_hint"
+            android:inputType="textPassword"
+            android:singleLine="true"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#808099"
+            android:textSize="15sp"
             android:layout_marginBottom="32dp" />
 
         <Button
-            android:id="@+id/btnLogin"
+            android:id="@+id/btnCreate"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:text="@string/login_button"
+            android:text="@string/create_account_button"
             android:textSize="15sp"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#E94560"
-            android:layout_marginBottom="12dp" />
-
-        <Button
-            android:id="@+id/btnSignUp"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:text="@string/signup_button"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:textColor="#E94560"
-            android:backgroundTint="#0F3460" />
+            android:backgroundTint="#E94560" />
 
     </LinearLayout>
 </ScrollView>
