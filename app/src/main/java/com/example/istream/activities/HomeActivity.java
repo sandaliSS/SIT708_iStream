@@ -37,22 +37,19 @@ public class HomeActivity extends AppCompatActivity {
 
         setTitle("iStream - " + username);
 
-        etUrl = findViewById(R.id.etUrl);
-        webView = findViewById(R.id.webView);
-        Button btnPlay = findViewById(R.id.btnPlay);
+        etUrl           = findViewById(R.id.etUrl);
+        webView         = findViewById(R.id.webView);
+        Button btnPlay          = findViewById(R.id.btnPlay);
         Button btnAddToPlaylist = findViewById(R.id.btnAddToPlaylist);
-        Button btnMyPlaylist = findViewById(R.id.btnMyPlaylist);
-        Button btnLogout = findViewById(R.id.btnLogout);
+        Button btnMyPlaylist    = findViewById(R.id.btnMyPlaylist);
+        Button btnLogout        = findViewById(R.id.btnLogout);
 
-        // Setup WebView
-        WebSettings settings = webView.getSettings();
-        settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
-        settings.setMediaPlaybackRequiresUserGesture(false);
-        webView.setWebChromeClient(new WebChromeClient());
-        webView.setWebViewClient(new WebViewClient());
+        // Setup WebView properly
+        setupWebView();
 
-        btnPlay.setOnClickListener(v -> playVideo(etUrl.getText().toString().trim()));
+        btnPlay.setOnClickListener(v ->
+                playVideo(etUrl.getText().toString().trim())
+        );
 
         btnAddToPlaylist.setOnClickListener(v -> {
             String url = etUrl.getText().toString().trim();
@@ -64,11 +61,18 @@ public class HomeActivity extends AppCompatActivity {
                 Toast.makeText(this, "Invalid YouTube URL", Toast.LENGTH_SHORT).show();
                 return;
             }
-            db.playlistDao().insert(new PlaylistItem(userId, url));
-            Toast.makeText(this, "Added to playlist!", Toast.LENGTH_SHORT).show();
+            // Fix issue 5 — DB off main thread
+            new Thread(() -> {
+                db.playlistDao().insert(new PlaylistItem(userId, url));
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Added to playlist!", Toast.LENGTH_SHORT).show()
+                );
+            }).start();
         });
 
-
+        btnMyPlaylist.setOnClickListener(v ->
+                startActivity(new Intent(this, PlaylistActivity.class))
+        );
 
         btnLogout.setOnClickListener(v -> logout());
 
@@ -78,6 +82,18 @@ public class HomeActivity extends AppCompatActivity {
             etUrl.setText(playUrl);
             playVideo(playUrl);
         }
+    }
+
+    // Extracted into its own method
+    private void setupWebView() {
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setLoadWithOverviewMode(true);
+        settings.setUseWideViewPort(true);
+        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebViewClient(new WebViewClient());
     }
 
     @Override
@@ -98,56 +114,71 @@ public class HomeActivity extends AppCompatActivity {
 
         String videoId = extractVideoId(url);
         if (videoId == null) {
-            Toast.makeText(this, "Invalid YouTube URL. Please use a valid youtube.com or youtu.be link.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Invalid YouTube URL.", Toast.LENGTH_LONG).show();
             return;
         }
 
-        String html = "<!DOCTYPE html><html><body style='margin:0;padding:0;background:#000;'>" +
-                "<iframe width='100%' height='100%' " +
-                "src='https://www.youtube.com/embed/" + videoId + "?autoplay=1' " +
-                "frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>" +
-                "</body></html>";
+        String html =
+                "<!DOCTYPE html><html>" +
+                        "<head>" +
+                        "<meta name='viewport' content='width=device-width, initial-scale=1'>" +
+                        "<style>" +
+                        "  * { margin:0; padding:0; }" +
+                        "  body { background:#000; }" +
+                        "  #player { width:100%; height:100%; }" +
+                        "</style>" +
+                        "</head>" +
+                        "<body>" +
+                        "<div id='player'></div>" +
+                        "<script src='https://www.youtube.com/iframe_api'></script>" +
+                        "<script>" +
+                        "  function onYouTubeIframeAPIReady() {" +
+                        "    new YT.Player('player', {" +
+                        "      width: '100%'," +
+                        "      height: '100%'," +
+                        "      videoId: '" + videoId + "'," +
+                        "      playerVars: { playsinline: 1, controls: 1, rel: 0 }" +
+                        "    });" +
+                        "  }" +
+                        "</script>" +
+                        "</body></html>";
 
-        webView.loadDataWithBaseURL("https://www.youtube.com", html, "text/html", "utf-8", null);
+        webView.loadDataWithBaseURL(
+                "https://www.youtube.com",
+                html,
+                "text/html",
+                "utf-8",
+                null
+        );
     }
 
+    // Fix issue 2 — proper video ID extraction
     private String extractVideoId(String url) {
         if (url == null || url.isEmpty()) return null;
 
-        // youtu.be/VIDEO_ID
+        if (url.contains("youtube.com/watch?v=")) {
+            String id = url.split("v=")[1];
+            int ampIndex = id.indexOf("&");
+            return ampIndex != -1 ? id.substring(0, ampIndex) : id;
+        }
         if (url.contains("youtu.be/")) {
-            String[] parts = url.split("youtu.be/");
-            if (parts.length > 1) {
-                String id = parts[1].split("[?&]")[0];
-                if (!id.isEmpty()) return id;
-            }
+            String id = url.split("youtu.be/")[1];
+            int qIndex = id.indexOf("?");
+            return qIndex != -1 ? id.substring(0, qIndex) : id;
         }
-
-        // youtube.com/watch?v=VIDEO_ID
-        if (url.contains("youtube.com/watch")) {
-            if (url.contains("v=")) {
-                String[] parts = url.split("v=");
-                if (parts.length > 1) {
-                    String id = parts[1].split("[?&]")[0];
-                    if (!id.isEmpty()) return id;
-                }
-            }
-        }
-
-        // youtube.com/embed/VIDEO_ID
         if (url.contains("youtube.com/embed/")) {
-            String[] parts = url.split("youtube.com/embed/");
-            if (parts.length > 1) {
-                String id = parts[1].split("[?&]")[0];
-                if (!id.isEmpty()) return id;
-            }
+            String id = url.split("embed/")[1];
+            int qIndex = id.indexOf("?");
+            return qIndex != -1 ? id.substring(0, qIndex) : id;
         }
-
         return null;
     }
 
     private boolean isValidYouTubeUrl(String url) {
-        return extractVideoId(url) != null;
+        if (url == null || url.isEmpty()) return false;
+        return url.contains("youtube.com/watch?v=") ||
+                url.contains("youtu.be/") ||
+                url.contains("youtube.com/embed/");
     }
 
     private void logout() {
@@ -165,5 +196,28 @@ public class HomeActivity extends AppCompatActivity {
         } else {
             super.onBackPressed();
         }
+    }
+
+    // Prevent audio/video leak when activity is destroyed
+    @Override
+    protected void onDestroy() {
+        if (webView != null) {
+            webView.stopLoading();
+            webView.destroy();
+            webView = null;
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (webView != null) webView.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (webView != null) webView.onResume();
     }
 }
