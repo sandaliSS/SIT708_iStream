@@ -22,13 +22,6 @@
             android:textColor="#E94560"
             android:layout_marginBottom="4dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/tagline"
-            android:textSize="14sp"
-            android:textColor="#B0B0C0"
-            android:layout_marginBottom="48dp" />
 
         <EditText
             android:id="@+id/etUsername"

@@ -6,19 +6,17 @@
     android:background="#1A1A2E">
 
     <!-- Video Player -->
-    <WebView
-        android:id="@+id/webView"
+    <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+        android:id="@+id/youtubePlayerView"
         android:layout_width="match_parent"
         android:layout_height="220dp"
         android:background="#000000" />
 
-    <!-- Divider line -->
     <View
         android:layout_width="match_parent"
         android:layout_height="2dp"
         android:background="#E94560" />
 
-    <!-- Controls -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
